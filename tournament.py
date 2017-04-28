@@ -68,13 +68,14 @@ def playerStandings():
     """
     player_standing = []
     connection = connect()
-    cursor = connect.cursor()
+    cursor = connection.cursor()
     cursor.execute('SELECT id, name, wins, COALESCE(losses, 0) AS losses FROM'
-      '(SELECT players.p_id AS id, players.p_name AS name, COALESCE(wins, 0) AS'
-      'wins FROM (SELECT m_winner, COUNT(m_winner) AS wins FROM matches'
-      'GROUP BY m_winner) AS win_count FULL JOIN players ON'
-      'players.p_id = win_count.m_winner) AS win_rank FULL JOIN'
-      '(SELECT m_loser, COUNT(m_loser) AS losses FROM matches GROUP BY m_loser)'
+      '(SELECT players.p_id AS id, players.p_name AS name, COALESCE(wins, 0) AS '
+      'wins FROM (SELECT m_winner, COUNT(m_winner)'
+      'AS wins FROM matches GROUP BY m_winner)'
+      'AS win_count FULL JOIN players ON players.p_id = win_count.m_winner)'
+      'AS win_rank FULL JOIN (SELECT m_loser, COUNT(m_loser)'
+      'AS losses FROM matches GROUP BY m_loser)'
       'AS loss_count ON id = m_loser ORDER BY wins DESC')
     rows = cursor.fetchall()
     connection.close()
@@ -111,3 +112,12 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    list_of_pairs = []
+    standing = playerStandings()
+    players = countPlayers()
+    for i in range(players):
+        if (i % 2 == 0):
+            list_of_pairs.append((standing[i][0], standing[i][1],
+                standing[i+1][0], standing[i+1][1]))
+
+    return list_of_pairs
