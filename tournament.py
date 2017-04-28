@@ -66,9 +66,23 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    #connection = connect()
-    #cursor = connect.cursor()
-    #cursor.execute('SELECT rank, name, wins, matches FROM ')
+    player_standing = []
+    connection = connect()
+    cursor = connect.cursor()
+    cursor.execute('SELECT id, name, wins, COALESCE(losses, 0) AS losses FROM'
+      '(SELECT players.p_id AS id, players.p_name AS name, COALESCE(wins, 0) AS'
+      'wins FROM (SELECT m_winner, COUNT(m_winner) AS wins FROM matches'
+      'GROUP BY m_winner) AS win_count FULL JOIN players ON'
+      'players.p_id = win_count.m_winner) AS win_rank FULL JOIN'
+      '(SELECT m_loser, COUNT(m_loser) AS losses FROM matches GROUP BY m_loser)'
+      'AS loss_count ON id = m_loser ORDER BY wins DESC')
+    rows = cursor.fetchall()
+    connection.close()
+    for row in rows:
+        matches = row[2] + row[3]
+        list_of_tuple = (row[0],row[1],row[2],matches)
+        player_standing.append(list_of_tuple)
+    return player_standing
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -97,5 +111,3 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-
-
