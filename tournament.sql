@@ -3,8 +3,7 @@
 -- Players table
 CREATE TABLE players (
     p_id SERIAL primary key,
-    p_name text,
-    p_color text
+    p_name text
 );
 
 -- Matches table
